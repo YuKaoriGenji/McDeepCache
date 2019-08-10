@@ -1,7 +1,7 @@
 import tensorflow as tf
 import math
-W=20
-H=20
+W=int(20)
+H=int(20)
 bound_x=int(240/W)
 bound_y=int(320/H)
 NUMX=0
@@ -12,6 +12,7 @@ MX=4
 MY=5
 #0       1       2       3       4       5
 #num_x   num_y   width   height  Mx      My 
+'''
 def NSPR(pict1,pict2,block1,block2):
     sums=tf.constant(0)
     devide=block1[WIDTH]*block2[HEIGHT]
@@ -24,6 +25,23 @@ def NSPR(pict1,pict2,block1,block2):
     nspr=tf.cond(tf.equal(rmse,0),lambda: tf.cast(10000,'float'),lambda: 20*(tf.log(1.0/rmse)/tf.log(tf.cast(10,'float'))))
     nspr=tf.cond(tf.equal(block1[HEIGHT],block2[HEIGHT]) & tf.equal(block2[WIDTH],block2[WIDTH]) ,lambda: nspr,lambda: tf.cast(0,'float'))
     return nspr
+'''
+
+def NSPR(para):
+    pict1=para[0]
+    pict2=para[1]
+    block1=para[2]
+    block2=para[3]
+    sums=tf.constant(0)
+    ref_data=pict1[block1[WIDTH]*block1[NUMX]:block1[WIDTH]*(block1[NUMX]+1),block1[HEIGHT]*block1[NUMY]:block1[HEIGHT]*(block1[NUMY]+1)]
+    target_data=pict2[block2[WIDTH]*block2[NUMX]:block2[WIDTH]*(block2[NUMX]+1),block2[HEIGHT]*block2[NUMY]:block2[HEIGHT]*(block2[NUMY]+1)]
+    diff = ref_data - target_data
+    diff=tf.reshape(diff,[-1])
+    rmse=tf.sqrt(tf.reduce_mean(tf.cast(tf.square(diff),'float')))
+    nspr=tf.cond(tf.equal(rmse,0),lambda: tf.cast(10000,'float'),lambda: 20*(tf.log(1.0/rmse)/tf.log(tf.cast(10,'float'))))
+    nspr=tf.cond(tf.equal(block2[0],0) & tf.equal(block2[1],0),lambda: tf.cast(0,'float'),lambda: nspr)
+    return nspr
+
 def Diamond_Search(pict,block1,previous_image):
     #x=tf.cast(block1[NUMX],'float')
     #y=tf.cast(block1[NUMY],'float')
@@ -34,29 +52,44 @@ def Diamond_Search(pict,block1,previous_image):
     Big_scale=tf.expand_dims(Big_scale,0)
     tmp=tf.stack([x,y-2])
     tmp=tf.expand_dims(tmp,0)
-    Big_scale=tf.cond(y-2>=0,lambda: tf.concat([Big_scale,tmp],0),lambda: tf.concat([Big_scale,[[100,100]]],0))
+    Big_scale=tf.cond(y-2>=0,lambda: tf.concat([Big_scale,tmp],0),lambda: tf.concat([Big_scale,[[0,0]]],0))
     tmp=tf.stack([x-1,y-1])
     tmp=tf.expand_dims(tmp,0)
-    Big_scale=tf.cond((y-1>=0) & (x-1>=0),lambda: tf.concat([Big_scale,tmp],0),lambda: tf.concat([Big_scale,[[100,100]]],0))
+    Big_scale=tf.cond((y-1>=0) & (x-1>=0),lambda: tf.concat([Big_scale,tmp],0),lambda: tf.concat([Big_scale,[[0,0]]],0))
     tmp=tf.stack([x+1,y-1])
     tmp=tf.expand_dims(tmp,0)
-    Big_scale=tf.cond((y-1>=0) & (x+1<bound_x),lambda: tf.concat([Big_scale,tmp],0),lambda: tf.concat([Big_scale,[[100,100]]],0))
+    Big_scale=tf.cond((y-1>=0) & (x+1<bound_x),lambda: tf.concat([Big_scale,tmp],0),lambda: tf.concat([Big_scale,[[0,0]]],0))
     tmp=tf.stack([x-2,y])
     tmp=tf.expand_dims(tmp,0)
-    Big_scale=tf.cond(x-2>=0,lambda: tf.concat([Big_scale,tmp],0),lambda: tf.concat([Big_scale,[[100,100]]],0))
+    Big_scale=tf.cond(x-2>=0,lambda: tf.concat([Big_scale,tmp],0),lambda: tf.concat([Big_scale,[[0,0]]],0))
     tmp=tf.stack([x-1,y+1])
     tmp=tf.expand_dims(tmp,0)
-    Big_scale=tf.cond((x-1>=0) & (y+1<bound_y),lambda: tf.concat([Big_scale,tmp],0),lambda: tf.concat([Big_scale,[[100,100]]],0))
+    Big_scale=tf.cond((x-1>=0) & (y+1<bound_y),lambda: tf.concat([Big_scale,tmp],0),lambda: tf.concat([Big_scale,[[0,0]]],0))
     tmp=tf.stack([x,y+2])
     tmp=tf.expand_dims(tmp,0)
-    Big_scale=tf.cond(y+2<=bound_y,lambda: tf.concat([Big_scale,tmp],0),lambda: tf.concat([Big_scale,[[100,100]]],0))
+    Big_scale=tf.cond(y+2<=bound_y,lambda: tf.concat([Big_scale,tmp],0),lambda: tf.concat([Big_scale,[[0,0]]],0))
     tmp=tf.stack([x+2,y])
     tmp=tf.expand_dims(tmp,0)
-    Big_scale=tf.cond(x+2>=bound_x,lambda: tf.concat([Big_scale,tmp],0),lambda: tf.concat([Big_scale,[[100,100]]],0))
+    Big_scale=tf.cond(x+2<=bound_x,lambda: tf.concat([Big_scale,tmp],0),lambda: tf.concat([Big_scale,[[0,0]]],0))
     tmp=tf.stack([x+1,y+1])
     tmp=tf.expand_dims(tmp,0)
-    Big_scale=tf.cond((y+1>=bound_y) & (x+1>=bound_x),lambda: tf.concat([Big_scale,tmp],0),lambda: tf.concat([Big_scale,[[100,100]]],0))
+    Big_scale=tf.cond((y+1<=bound_y) & (x+1<=bound_x),lambda: tf.concat([Big_scale,tmp],0),lambda: tf.concat([Big_scale,[[100,100]]],0))
     print('Big_scale:',Big_scale)
+    pict_ex=tf.expand_dims(pict,0)
+    pict_group=tf.tile(pict_ex,[9,1,1,1])
+    block1_group=tf.tile(tf.expand_dims(block1,0),[9,1])
+    previous_group=tf.tile(tf.expand_dims(previous_image,0),[9,1,1,1])
+    t2=tf.cast(tf.tile([[W,H,0,0]],[9,1]),'int32')
+    print('t2',t2)
+    print('Big_scale',Big_scale)
+    block2_group=tf.concat([Big_scale,t2],1)
+    print('block2_group',block2_group)
+    para_big=[pict_group,previous_group,block1_group,block2_group]
+    print('para_big:',para_big)
+    score=tf.map_fn(NSPR,para_big,tf.float32)
+    return score
+    '''
+    print(score)
     score0=tf.cond(tf.not_equal(Big_scale[0,0],100),lambda: NSPR(pict,previous_image,block1,tf.convert_to_tensor([Big_scale[0,0],Big_scale[0,1],W,H,0,0])),lambda: tf.convert_to_tensor(0,'float'))
     score1=tf.cond(tf.not_equal(Big_scale[1,0],100),lambda: NSPR(pict,previous_image,block1,tf.convert_to_tensor([Big_scale[1,0],Big_scale[1,1],W,H,0,0])),lambda: tf.convert_to_tensor(0,'float'))
     score2=tf.cond(tf.not_equal(Big_scale[2,0],100),lambda: NSPR(pict,previous_image,block1,tf.convert_to_tensor([Big_scale[2,0],Big_scale[2,1],W,H,0,0])),lambda: tf.convert_to_tensor(0,'float'))
@@ -94,6 +127,7 @@ def Diamond_Search(pict,block1,previous_image):
     score_s=tf.convert_to_tensor([score0,score1,score2,score3,score4])
     Small_num=tf.argmax(score)
     return Small_scale[Small_num,0],Small_scale[Small_num,1]
+    '''
 
 def ComputeOverlay(picture1,picture2):
     block_all=np.zeros([12,16,6],dtype=np.int)
