@@ -8,63 +8,63 @@ import pdb
 from tensorflow.python.profiler import model_analyzer
 from tensorflow.python.profiler import option_builder
 def conv_c(a,b,List,strideX,strideY,padding,previous_feature):
-    batch_size=a.get_shape()[0]    # width
-    width=int(a.get_shape()[1])    # width
-    print('width:++++++++++++++++++++++++++++++++++++++\n',width)
-    height=int(a.get_shape()[2])   # height
-    kernel_x=int(b.get_shape()[1])
-    kernel_y=int(b.get_shape()[0])
-    channels=int(b.get_shape()[2])
-    out_channels=int(b.get_shape()[3])
-    #Lis_len=int(List.get_shape()[0])
-    pict_n=List[0]      # the blank we operate 
-    #List.remove(pict_n) # delete the blank of the list
-    # condition
-    # all in picture
-    #List=List[1:Lis_len-1]
-    print('x_coor:',List[0],'y_coor:',List[1])
-    print('b:',b)
-    # split the graph and compute the convolution
-    graph_A=tf.slice(a,[0,0,0,0],[-1,width,List[1]*H+kernel_y,channels])
-    conv_A=tf.nn.conv2d(graph_A,b,strides=[1,strideY,strideX,1],padding=padding)
-    print('conv_A____________________________________________________\n',conv_A)
-    graph_B=tf.slice(a,[0,0,List[1]*W+4,0],[-1,List[0]*H+kernel_x,List[3]-8,channels])
-    conv_B=tf.nn.conv2d(graph_B,b,strides=[1,strideY,strideX,1],padding=padding)
-    print('graph_B____________________________________________________\n',graph_B)
-    print('conv_B____________________________________________________\n',conv_B)
-    #graph_C=tf.slice(a,[0,List[0]*W+width-kernel_x,List[1]*H+4,0],[-1,width-(List[0]*W+List[2])+kernel_x,List[3]-8,channels])
-    graph_C=tf.slice(a,[0,List[0]*W+List[2]-kernel_x,List[1]*H+4,0],[-1,-1,List[3]-8,channels])
-    conv_C=tf.nn.conv2d(graph_C,b,strides=[1,strideY,strideX,1],padding=padding)
-    print('graph_C____________________________________________________\n',graph_C)
-    print('conv_C____________________________________________________\n',conv_C)
-    #graph_D=tf.slice(a,[0,0,List[1]*W+List[3]-kernel_y,0],[-1,width,height-List[3]-List[1]*H+kernel_y,channels])
-    graph_D=tf.slice(a,[0,0,List[1]*H+List[3]-kernel_y,0],[-1,width,-1,channels])
-    conv_D=tf.nn.conv2d(graph_D,b,strides=[1,strideY,strideX,1],padding=padding)
-    print('conv_D____________________________________________________\n',conv_D)
-    print('previous____________________________________________________\n',previous_feature)
-    conv_Center=tf.slice(previous_feature,[0,tf.cast((List[0]*W+List[4]*W)/strideX+1,tf.int32),tf.cast((List[1]*H+List[5]*H)/strideY+1,tf.int32),0],[-1,tf.cast(1+(List[2]-kernel_x)/strideX-2,tf.int32),tf.cast(1+(List[3]-kernel_y)/strideY-2,tf.int32),out_channels])
-    #conv_Center=tf.slice(previous_feature,[0,tf.cast((List[0]*W+List[4]*W)/strideX+1,tf.int32),tf.cast((List[1]*H+List[5]*H)/strideY+1,tf.int32),0],[-1,-1,tf.cast(1+(List[3]-kernel_y)/strideY-2,tf.int32),out_channels])
-    print('conv_Center____________________________________________________\n',conv_Center)
-    middle=tf.concat([conv_B,conv_Center,conv_C],axis=1)
-    result=tf.concat([conv_A,middle,conv_D],axis=2)
-    return result
+    	batch_size=a.get_shape()[0]    # width
+    	width=int(a.get_shape()[1])    # width
+    	print('width:++++++++++++++++++++++++++++++++++++++\n',width)
+    	height=int(a.get_shape()[2])   # height
+    	kernel_x=int(b.get_shape()[1])
+    	kernel_y=int(b.get_shape()[0])
+    	channels=int(b.get_shape()[2])
+    	out_channels=int(b.get_shape()[3])
+    	#Lis_len=int(List.get_shape()[0])
+    	pict_n=List[0]      # the blank we operate 
+    	#List.remove(pict_n) # delete the blank of the list
+    	# condition
+    	# all in picture
+	#List=List[1:Lis_len-1]
+    	print('x_coor:',List[0],'y_coor:',List[1])
+    	print('b:',b)
+    	# split the graph and compute the convolution
+    	graph_A=tf.slice(a,[0,0,0,0],[-1,width,List[1]*H+kernel_y,channels])
+    	conv_A=tf.nn.conv2d(graph_A,b,strides=[1,strideY,strideX,1],padding=padding)
+    	print('conv_A____________________________________________________\n',conv_A)
+    	graph_B=tf.slice(a,[0,0,List[1]*W+4,0],[-1,List[0]*H+kernel_x,List[3]-8,channels])
+    	conv_B=tf.nn.conv2d(graph_B,b,strides=[1,strideY,strideX,1],padding=padding)
+    	print('graph_B____________________________________________________\n',graph_B)
+    	print('conv_B____________________________________________________\n',conv_B)
+    	#graph_C=tf.slice(a,[0,List[0]*W+width-kernel_x,List[1]*H+4,0],[-1,width-(List[0]*W+List[2])+kernel_x,List[3]-8,channels])
+    	graph_C=tf.slice(a,[0,List[0]*W+List[2]-kernel_x,List[1]*H+4,0],[-1,-1,List[3]-8,channels])
+    	conv_C=tf.nn.conv2d(graph_C,b,strides=[1,strideY,strideX,1],padding=padding)
+    	print('graph_C____________________________________________________\n',graph_C)
+    	print('conv_C____________________________________________________\n',conv_C)
+    	#graph_D=tf.slice(a,[0,0,List[1]*W+List[3]-kernel_y,0],[-1,width,height-List[3]-List[1]*H+kernel_y,channels])
+    	graph_D=tf.slice(a,[0,0,List[1]*H+List[3]-kernel_y,0],[-1,width,-1,channels])
+    	conv_D=tf.nn.conv2d(graph_D,b,strides=[1,strideY,strideX,1],padding=padding)
+    	print('conv_D____________________________________________________\n',conv_D)
+    	print('previous____________________________________________________\n',previous_feature)
+    	conv_Center=tf.slice(previous_feature,[0,tf.cast((List[0]*W+List[4]*W)/strideX+1,tf.int32),tf.cast((List[1]*H+List[5]*H)/strideY+1,tf.int32),0],[-1,tf.cast(1+(List[2]-kernel_x)/strideX-2,tf.int32),tf.cast(1+(List[3]-kernel_y)/strideY-2,tf.int32),out_channels])
+    	#conv_Center=tf.slice(previous_feature,[0,tf.cast((List[0]*W+List[4]*W)/strideX+1,tf.int32),tf.cast((List[1]*H+List[5]*H)/strideY+1,tf.int32),0],[-1,-1,tf.cast(1+(List[3]-kernel_y)/strideY-2,tf.int32),out_channels])
+    	print('conv_Center____________________________________________________\n',conv_Center)
+    	middle=tf.concat([conv_B,conv_Center,conv_C],axis=1)
+    	result=tf.concat([conv_A,middle,conv_D],axis=2)
+    	return result
 
 def convLayer_c(x,kHeight,kWidth,strideX,strideY,featureNum,name,padding="SAME",groups=1,mode=0,previous_feature=None,Blank=None):
-    channel=int(x.get_shape()[-1])
-    conv=lambda a,b:tf.nn.conv2d(a,b,strides=[1,strideY,strideX,1],padding=padding)
-    with tf.variable_scope(name) as scope:
-        w= tf.get_variable("w", shape = [kHeight, kWidth, channel, featureNum])
-        b= tf.get_variable("b",shape=[featureNum])
-        mergeFeatureMap=tf.cond(tf.equal(mode,1),lambda: conv_d(x,w,Blank,4,4,padding,previous_feature),lambda: conv(x,w))
-        #mergeFeatureMap=conv_c(x,w,tf.constant([0,0,200,200,1,1]),4,4,padding,previous_feature)
+    	channel=int(x.get_shape()[-1])
+    	conv=lambda a,b:tf.nn.conv2d(a,b,strides=[1,strideY,strideX,1],padding=padding)
+    	with tf.variable_scope(name) as scope:
+        	w= tf.get_variable("w", shape = [kHeight, kWidth, channel, featureNum])
+        	b= tf.get_variable("b",shape=[featureNum])
+        	mergeFeatureMap=tf.cond(tf.equal(mode,1),lambda: conv_d(x,w,Blank,4,4,padding,previous_feature),lambda: conv(x,w))
+        	#mergeFeatureMap=conv_c(x,w,tf.constant([0,0,200,200,1,1]),4,4,padding,previous_feature)
 
-        out=tf.nn.bias_add(mergeFeatureMap,b)
-        print(name,'x----------------------',x.get_shape())
-        print(name,'w----------------------',w.get_shape())
-        print(name,'shape----------------------',mergeFeatureMap.get_shape())
-        print(name,'out----------------------',out)
-        #return tf.nn.relu(tf.reshape(out,mergeFeatureMap.get_shape()),name=scope.name)
-        return tf.nn.relu(out,name=scope.name)
+        	out=tf.nn.bias_add(mergeFeatureMap,b)
+        	print(name,'x----------------------',x.get_shape())
+        	print(name,'w----------------------',w.get_shape())
+        	print(name,'shape----------------------',mergeFeatureMap.get_shape())
+        	print(name,'out----------------------',out)
+        	#return tf.nn.relu(tf.reshape(out,mergeFeatureMap.get_shape()),name=scope.name)
+        	return tf.nn.relu(out,name=scope.name)
 
 class YOLO_TF:
 	fromfile = None
